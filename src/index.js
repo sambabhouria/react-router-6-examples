@@ -1,17 +1,44 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import ReactDOM from 'react-dom';
+import {
+  BrowserRouter,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
+import { QueryParamProvider } from 'use-query-params';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+// import App from './App';
+// import App from './App.Redirect.jsx';
+// import App from './App.Authentication.jsx';
+// import App from './App.Nested.jsx';
+// import App from './App.Descendant.jsx';
+// import App from './App.QueryParams.jsx';
+import App from './App.LazyLoading.jsx';
+
+// use-query-params adapeter for React Router 6
+const RouteAdapter = ({ children }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const adaptedHistory = React.useMemo(
+    () => ({
+      replace(location) {
+        navigate(location, { replace: true, state: location.state });
+      },
+      push(location) {
+        navigate(location, { replace: false, state: location.state });
+      },
+    }),
+    [navigate]
+  );
+  return children({ history: adaptedHistory, location });
+};
+
+ReactDOM.render(
+  <BrowserRouter>
+    <QueryParamProvider ReactRouterRoute={RouteAdapter}>
+      <App />
+    </QueryParamProvider>
+  </BrowserRouter>,
+  document.getElementById('root')
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
